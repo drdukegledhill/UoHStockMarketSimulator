@@ -603,11 +603,14 @@ function toggleDrawer(force) {
   const d = $('#drawer');
   const open = force ?? !d.classList.contains('open');
   d.classList.toggle('open', open);
+  if (!open && d.contains(document.activeElement)) document.activeElement.blur();
   if (open) renderControls?.(controlState());
 }
 
 document.addEventListener('keydown', (e) => {
   if (e.target.closest('input, select, textarea')) return;
+  // Stop Space/Enter from also "clicking" whichever button was clicked last.
+  if (e.key === ' ' && e.target.closest('button')) e.target.blur();
   sound.ctx()?.resume?.();
   if (e.key === 'c' || e.key === 'C') toggleDrawer();
   else if (e.key === 'f' || e.key === 'F') {
@@ -620,8 +623,22 @@ document.addEventListener('keydown', (e) => {
     handleCommand({ cmd: ph === 'lobby' ? 'start' : ph === 'paused' ? 'resume' : 'pause' });
   } else if (e.key === 'Escape') toggleDrawer(false);
 });
+document.addEventListener('keyup', (e) => { if (e.key === ' ' && !e.target.closest('input, select, textarea')) e.preventDefault(); });
 document.addEventListener('click', () => { sound.ctx()?.resume?.(); keepAwake(); }, { once: false });
-$('#ctl-toggle').addEventListener('click', () => toggleDrawer());
+$('#ctl-toggle').addEventListener('click', (e) => { toggleDrawer(); e.currentTarget.blur(); });
+
+// Fade the Controls button while the market is running and the mouse is still.
+let idleTimer = null;
+function wake() {
+  document.body.classList.remove('idle');
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(() => {
+    const drawerOpen = $('#drawer').classList.contains('open');
+    if (!drawerOpen && market && market.phase !== 'lobby') document.body.classList.add('idle');
+  }, 4000);
+}
+['mousemove', 'mousedown', 'keydown', 'touchstart'].forEach((ev) => document.addEventListener(ev, wake, { passive: true }));
+wake();
 window.addEventListener('resize', () => { debriefDrawn = false; loop(true); });
 keepAwake();
 

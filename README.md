@@ -104,9 +104,12 @@ A custom domain works too (for example `market.drduke.uk`). Add it under **Setti
 
 ### Keyboard shortcuts (big screen)
 
+The yellow **Controls** button in the top-right corner opens the control panel. While the market is running it fades after four seconds without mouse movement, so it doesn't distract the audience. Move the mouse and it comes straight back.
+
+
 | Key | Action |
 | --- | --- |
-| **C** | Show or hide the control panel |
+| **C** | Show or hide the control panel (or click the yellow **Controls** button, top right) |
 | **F** | Full screen |
 | **Space** | Opening bell, then pause and resume |
 | **M** | Sounds on or off |

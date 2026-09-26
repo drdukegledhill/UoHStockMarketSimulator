@@ -4,7 +4,7 @@
 // which version a projector or phone has loaded.
 // ---------------------------------------------------------------------------
 
-export const VERSION = '1.2.0';
+export const VERSION = '1.2.1';
 export const RELEASED = '2026-09-26';
 
 export const CREDIT = {
