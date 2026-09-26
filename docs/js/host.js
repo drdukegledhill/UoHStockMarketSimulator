@@ -104,8 +104,10 @@ function joinUrl() {
   u.search = '';
   u.searchParams.set('room', room);
   if (NET === 'local') u.searchParams.set('net', 'local');
-  const peer = new URLSearchParams(location.search).get('peer');
-  if (peer) u.searchParams.set('peer', peer);
+  for (const k of ['peer', 'turnurl']) {
+    const v = new URLSearchParams(location.search).get(k);
+    if (v) u.searchParams.set(k, v);
+  }
   return u.toString();
 }
 function controlUrl(sameBrowser = false) {
@@ -115,8 +117,10 @@ function controlUrl(sameBrowser = false) {
   u.searchParams.set('key', key);
   if (NET === 'local') u.searchParams.set('net', 'local');
   if (sameBrowser) u.searchParams.set('same', '1');
-  const peer = new URLSearchParams(location.search).get('peer');
-  if (peer) u.searchParams.set('peer', peer);
+  for (const k of ['peer', 'turnurl']) {
+    const v = new URLSearchParams(location.search).get(k);
+    if (v) u.searchParams.set(k, v);
+  }
   return u.toString();
 }
 

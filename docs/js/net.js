@@ -17,8 +17,41 @@ export function netMode() {
   return params.get('net') === 'local' ? 'local' : 'peer';
 }
 
-function peerOptions() {
+// ICE servers: STUN from config, plus TURN relay credentials fetched once per
+// page load when NETWORK.turnCredentialsUrl is set (or ?turnurl= in the URL).
+let icePromise = null;
+export function getIceServers() {
+  if (!icePromise) {
+    icePromise = (async () => {
+      const stun = NETWORK.peerOptions.config?.iceServers || [];
+      const extra = NETWORK.extraIceServers || [];
+      const url = params.get('turnurl') || NETWORK.turnCredentialsUrl;
+      const hasTurn = (list) => list.some((s) => [].concat(s.urls).some((u) => /^turns?:/.test(u)));
+      if (url) {
+        try {
+          const r = await fetch(url, { cache: 'no-store' });
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          const list = await r.json();
+          if (Array.isArray(list) && list.length) {
+            // Keep the list short: browsers slow down with five or more servers.
+            return { servers: [...list.slice(0, 5), ...extra], relay: true };
+          }
+          throw new Error('empty list');
+        } catch (e) {
+          console.warn('Could not fetch TURN credentials', e);
+          return { servers: [...stun, ...extra], relay: hasTurn(extra), error: e.message };
+        }
+      }
+      return { servers: [...stun, ...extra], relay: hasTurn(extra) };
+    })();
+  }
+  return icePromise;
+}
+
+async function peerOptions() {
   const opts = structuredClone(NETWORK.peerOptions);
+  const ice = await getIceServers();
+  opts.config = { ...(opts.config || {}), iceServers: ice.servers };
   // ?peer=host:port lets you point at your own PeerJS server (handy for testing).
   const custom = params.get('peer');
   if (custom) {
@@ -58,12 +91,21 @@ function peerHost(room, onConnection, onStatus) {
   const ready = new Promise((res, rej) => { resolveReady = res; rejectReady = rej; });
   let attempts = 0;
 
-  const start = () => {
+  const start = async () => {
     if (stopped) return;
     attempts++;
     onStatus('Connecting to signalling server...', 'wait');
-    peer = new window.Peer(hostPeerId(room), peerOptions());
-    peer.on('open', () => { attempts = 0; onStatus('Online: phones can join', 'ok'); resolveReady(); });
+    const opts = await peerOptions();
+    const ice = await getIceServers();
+    if (stopped) return;
+    peer = new window.Peer(hostPeerId(room), opts);
+    peer.on('open', () => {
+      attempts = 0;
+      if (ice.relay) onStatus('Online with relay: phones can join from any network', 'ok');
+      else if (ice.error) onStatus(`Online, but the TURN relay failed (${ice.error}). Phones on mobile data may not connect.`, 'warn');
+      else onStatus('Online without a relay: phones on mobile data may not connect (see README)', 'ok');
+      resolveReady();
+    });
     peer.on('connection', (dc) => {
       const conn = makeConn(dc.peer, (o) => dc.send(o), () => dc.close());
       dc.on('data', (d) => conn._msg(d));
@@ -133,12 +175,13 @@ export function connectToHost(room) {
   return netMode() === 'local' ? localClient(room) : peerClient(room);
 }
 
-function peerClient(room) {
+async function peerClient(room) {
+  const opts = await peerOptions();
   return new Promise((resolve, reject) => {
-    const peer = new window.Peer(peerOptions());
+    const peer = new window.Peer(opts);
     let settled = false;
     const fail = (e) => { if (!settled) { settled = true; try { peer.destroy(); } catch (x) { /* ignore */ } reject(e); } };
-    const timer = setTimeout(() => fail(new Error('timeout')), 20000);
+    const timer = setTimeout(() => fail(new Error('timeout')), 15000);
     peer.on('open', () => {
       const dc = peer.connect(hostPeerId(room), { serialization: 'json', reliable: true });
       const conn = makeConn(peer.id, (o) => dc.send(o), () => { dc.close(); peer.destroy(); });

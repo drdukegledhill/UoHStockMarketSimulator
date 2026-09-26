@@ -2,3 +2,5 @@
 node_modules/
 *.log
 .smbdelete*
+site_tmp/
+setup/

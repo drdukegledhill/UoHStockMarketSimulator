@@ -188,30 +188,34 @@ Module names, accreditations and the course URL (it contains the academic year) 
 
 ## Networking: what can go wrong
 
-This is a 100% GitHub Pages build, so it depends on two free outside services:
+This is a 100% GitHub Pages build, so it depends on outside services:
 
 1. **The PeerJS public signalling server** (`0.peerjs.com`), which introduces phones to the host. If it is down, new phones can't join, although phones already connected keep working. The host shows a warning and keeps retrying.
-2. **Google's public STUN servers**, which help phones find a route to the laptop.
+2. **Google's public STUN servers**, which help phones find a direct route to the laptop.
+3. **A TURN relay (strongly recommended).** A direct route usually fails when phones are on 4G/5G and the laptop is on university Wi-Fi: the mobile network shares addresses between customers and the campus network blocks incoming peer-to-peer traffic. The symptom is phones stuck on "Connecting". A TURN relay fixes it by passing the traffic through a server on port 443, which almost every network allows.
 
-WebRTC connects directly between the phone and the laptop. That works on most home networks and mobile data. It can fail on:
+### Setting up the free TURN relay (about five minutes)
 
-- **Wi-Fi that isolates clients from each other.** This is common on guest and event Wi-Fi, and on some eduroam setups.
-- **Some mobile networks** (carrier-grade NAT).
-- **Corporate firewalls that block UDP.**
+1. Sign up for a free account on Metered's [Open Relay Project](https://www.metered.ca/tools/openrelay/). The free tier includes 20 GB of relay traffic a month. A 10-minute session with 50 phones uses a few megabytes.
+2. In the Metered dashboard, create an app and copy its **TURN credentials URL**. It looks like:
+   `https://YOURAPP.metered.live/api/v1/turn/credentials?apiKey=YOUR_API_KEY`
+3. Paste it into `docs/js/config.js`:
 
-If phones can't connect:
+   ```js
+   turnCredentialsUrl: 'https://YOURAPP.metered.live/api/v1/turn/credentials?apiKey=YOUR_API_KEY',
+   ```
 
-- **Ask applicants to switch off Wi-Fi and use mobile data**, or the other way round. This fixes most cases.
-- **Put the laptop on a phone hotspot** so that it is on a simpler network.
-- **Add a TURN relay server**, the proper fix. It relays traffic when a direct route fails. Several providers offer free or cheap tiers. Add the details to `NETWORK.peerOptions.config.iceServers` in `docs/js/config.js`:
+4. Commit and push. Open the control panel on the big screen (press **C**). The status line should say **"Online with relay: phones can join from any network"**.
 
-  ```js
-  { urls: 'turn:turn.example.com:443?transport=tcp', username: '...', credential: '...' }
-  ```
+To try a credentials URL without committing it, add `?turnurl=<the URL, URL-encoded>` to the host address. The QR code passes it on to phones.
 
-  The credentials are visible in the page source. Use a provider that lets you restrict them by domain, or accept that someone could borrow your relay.
+The API key is visible in the page source, as with any static site. Anyone could borrow your relay allowance. That doesn't matter much on a free tier, but check the Metered dashboard for options to limit where the key can be used. You can also list TURN servers directly in `NETWORK.extraIceServers` if the University or another provider gives you one.
 
-- **Run your own PeerJS server** if you want to avoid the public one. Point the site at it with `NETWORK.peerOptions` (`host`, `port`, `path`, `secure`), or for a quick test add `?peer=host:port` to the host URL.
+### Other things to try on the day
+
+- If a phone still can't connect, ask the user to switch between Wi-Fi and mobile data and reload. The phone page suggests this after a failed attempt.
+- Putting the laptop on a phone hotspot also works as a stopgap without a relay.
+- To avoid the public signalling server, run your own PeerJS server and point `NETWORK.peerOptions` (`host`, `port`, `path`, `secure`) at it. For a quick test, add `?peer=host:port` to the host URL.
 
 Capacity: the host sends one small update per phone per second. A normal laptop handles a lecture theatre (100+ phones) comfortably. A group of 25 phones has been tested.
 

@@ -105,7 +105,14 @@ async function connect() {
     if (e.message === 'not-found') {
       setConn('bad', 'Room not found');
       $('#join-err').textContent = `Can't find room ${room}. Check the code on the big screen. Retrying...`;
-    } else setConn('bad', 'Connection problem');
+    } else {
+      setConn('bad', 'Connection problem');
+      if (!S.pf) {
+        $('#join-err').textContent = S.retry >= 1
+          ? "Still can't reach the big screen from this network. Try switching between Wi-Fi and mobile data, then reload."
+          : 'Having trouble reaching the big screen. Still trying...';
+      }
+    }
     scheduleReconnect();
   }
 }

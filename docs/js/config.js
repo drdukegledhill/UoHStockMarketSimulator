@@ -70,10 +70,42 @@ export const MARKET = {
 };
 
 // Networking. With no settings PeerJS uses its free public signalling server
-// and Google's public STUN server. Add a TURN server here if phones on some
-// networks cannot connect (see README).
+// and Google's public STUN server. That only works when phone and laptop can
+// reach each other directly. Phones on 4G/5G talking to a laptop on university
+// Wi-Fi usually CANNOT, so set up a TURN relay (see README, "Networking").
 export const NETWORK = {
   peerIdPrefix: 'uoh-market-challenge-',
+  // Easiest option: a free Metered "Open Relay" account (20 GB/month). Paste the
+  // credentials URL from your Metered dashboard, e.g.
+  // 'https://YOURAPP.metered.live/api/v1/turn/credentials?apiKey=YOUR_API_KEY'
+  turnCredentialsUrl: '',
+  // Alternatively, list TURN servers directly:
+  // { urls: 'turns:turn.example.com:443?transport=tcp', username: '...', credential: '...' }
+  extraIceServers: [
+    {
+      urls: "stun:stun.relay.metered.ca:80",
+    },
+    {
+      urls: "turn:global.relay.metered.ca:80",
+      username: "61b1b04692c9e659fa1b9c17",
+      credential: "kZc2h/kYOUsWzW8K",
+    },
+    {
+      urls: "turn:global.relay.metered.ca:80?transport=tcp",
+      username: "61b1b04692c9e659fa1b9c17",
+      credential: "kZc2h/kYOUsWzW8K",
+    },
+    {
+      urls: "turn:global.relay.metered.ca:443",
+      username: "61b1b04692c9e659fa1b9c17",
+      credential: "kZc2h/kYOUsWzW8K",
+    },
+    {
+      urls: "turns:global.relay.metered.ca:443?transport=tcp",
+      username: "61b1b04692c9e659fa1b9c17",
+      credential: "kZc2h/kYOUsWzW8K",
+    }
+  ],
   peerOptions: {
     // host: 'your-peer-server.example.com', port: 443, path: '/', secure: true,
     config: {
