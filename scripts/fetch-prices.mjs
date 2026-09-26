@@ -13,7 +13,7 @@
 
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { COMMODITIES } from '../docs/js/config.js';
+import { APP, COMMODITIES } from '../docs/js/config.js';
 
 const OUT = fileURLToPath(new URL('../docs/data/prices.json', import.meta.url));
 const UA = 'Mozilla/5.0 (compatible; UoH-Market-Challenge/1.0; +https://github.com/)';
@@ -60,12 +60,30 @@ async function fromStooq(sym) {
 }
 
 async function main() {
-  let previous = {}, previousSource = null;
+  let old = {};
   try {
-    const old = JSON.parse(await readFile(OUT, 'utf8'));
-    previous = old.commodities || {};
-    previousSource = old.source || null;
+    old = JSON.parse(await readFile(OUT, 'utf8'));
   } catch { /* first run */ }
+  const previous = old.commodities || {};
+  const previousSource = old.source || null;
+  let usdPerGbp = +old.usdPerGbp || APP.usdPerGbpFallback;
+  let fxAsOf = old.fxAsOf || null;
+  let fxSource = old.fxSource || 'built-in fallback';
+  let freshFx = false;
+  for (const [name, fn, sym] of [['Yahoo Finance', fromYahoo, 'GBPUSD=X'], ['Stooq', fromStooq, 'gbpusd']]) {
+    try {
+      const r = await fn(sym);
+      if (r.price < 0.5 || r.price > 2) throw new Error(`implausible rate ${r.price}`);
+      usdPerGbp = +r.price.toFixed(6);
+      fxAsOf = r.date;
+      fxSource = name;
+      freshFx = true;
+      break;
+    } catch (e) {
+      console.warn(`GBP/USD: ${name} failed (${e.message})`);
+    }
+  }
+  if (!freshFx) console.warn(`GBP/USD: using previous rate ${usdPerGbp}${fxAsOf ? ` from ${fxAsOf}` : ''}`);
 
   const commodities = {};
   const sources = new Set();
@@ -102,6 +120,9 @@ async function main() {
     asOf: dates[dates.length - 1] || null,
     source: [...sources].join(' / ') || previousSource || 'built-in defaults',
     currency: 'USD',
+    usdPerGbp,
+    fxAsOf,
+    fxSource,
     commodities,
   };
   await writeFile(OUT, JSON.stringify(out, null, 2) + '\n');

@@ -21,8 +21,9 @@ export const APP = {
       'AACSB-accredited Huddersfield Business School',
     ],
   },
-  currency: 'USD',
-  currencySymbol: '$',
+  currency: 'GBP',
+  currencySymbol: '£',
+  usdPerGbpFallback: 1.3246,
 };
 
 // Commodities traded in the game. `vol` is the standard deviation of the log

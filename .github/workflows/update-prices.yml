@@ -22,7 +22,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Fetch latest closing prices
+      - name: Fetch latest closing prices and GBP/USD rate
         run: node scripts/fetch-prices.mjs
       - name: Commit if changed
         run: |

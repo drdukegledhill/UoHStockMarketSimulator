@@ -14,7 +14,7 @@ import {
 } from './ui.js';
 
 const NET = netMode();
-const SAVE_KEY = `uoh-market-host-${NET}`;
+const SAVE_KEY = `uoh-market-host-gbp-${NET}`;
 const SETTINGS_KEY = 'uoh-market-settings';
 const PROTOCOL = 1;
 
@@ -41,18 +41,24 @@ async function loadPrices() {
     const r = await fetch(`data/prices.json?t=${Date.now()}`, { cache: 'no-store' });
     if (!r.ok) throw new Error(r.status);
     const j = await r.json();
+    if (String(j.currency || 'USD').toUpperCase() !== 'USD') throw new Error('Expected USD opening prices');
+    const quotedRate = +j.usdPerGbp;
+    const usdPerGbp = quotedRate > 0 ? quotedRate : APP.usdPerGbpFallback;
     const prices = {};
     for (const c of COMMODITIES) {
       const v = +j?.commodities?.[c.sym]?.price;
-      if (v > 0) prices[c.sym] = v;
+      prices[c.sym] = (v > 0 ? v : c.fallback) / usdPerGbp;
     }
     if (!Object.keys(prices).length) throw new Error('empty');
     const d = j.asOf ? new Date(j.asOf + 'T12:00:00Z') : null;
     const when = d ? d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'unknown date';
-    return { prices, label: `${j.source || 'market data'}, last close ${when}`, asOf: j.asOf };
+    const fxAsOf = j.fxAsOf ? new Date(j.fxAsOf + 'T12:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : null;
+    const fxSource = quotedRate > 0 ? `${j.fxSource || 'FX feed'}${fxAsOf ? `, ${fxAsOf}` : ''}` : 'built-in FX fallback';
+    return { prices, label: `${j.source || 'market data'}, last close ${when}; £1 = $${usdPerGbp.toFixed(4)} (${fxSource})`, asOf: j.asOf };
   } catch (e) {
     console.warn('Could not load data/prices.json, using built-in defaults', e);
-    return null;
+    const prices = Object.fromEntries(COMMODITIES.map((c) => [c.sym, c.fallback / APP.usdPerGbpFallback]));
+    return { prices, label: `Built-in defaults; converted at £1 = $${APP.usdPerGbpFallback.toFixed(4)}` };
   }
 }
 
