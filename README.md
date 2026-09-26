@@ -4,12 +4,12 @@ A live commodities trading game for University of Huddersfield applicant events,
 
 The presenter's laptop runs the market on the big screen. Applicants scan a QR code, get pretend cash and trade five real commodities from their phones. Prices start from the real closing prices and then evolve in a simulation. The presenter can trigger crashes, bubbles, supply shocks and breaking news. At the closing bell, a debrief screen explains what happened and links each event to a module on the course.
 
-The whole thing is static HTML, CSS and JavaScript, so it runs on **GitHub Pages** with no server of its own.
+The whole thing is static HTML, CSS and JavaScript, so it runs on **GitHub Pages** with no server of its own. The website lives in the `docs/` folder, which GitHub Pages publishes. Everything else in the repository (the price script, the workflow and this README) stays out of the published site.
 
-![Lobby](docs/lobby.jpg)
-![Live market](docs/live.jpg)
-![Debrief](docs/debrief.jpg)
-![Phone screens](docs/phone.jpg)
+![Lobby](screenshots/lobby.jpg)
+![Live market](screenshots/live.jpg)
+![Debrief](screenshots/debrief.jpg)
+![Phone screens](screenshots/phone.jpg)
 
 ---
 
@@ -43,14 +43,14 @@ The whole thing is static HTML, CSS and JavaScript, so it runs on **GitHub Pages
   |  - control drawer      |<-- WebRTC --  control.html
   +------------------------+
              ^
-             | fetches data/prices.json on load
+             | fetches docs/data/prices.json on load
              |
-  GitHub Action (weekday mornings) writes data/prices.json from Yahoo Finance / Stooq
+  GitHub Action (weekday mornings) writes docs/data/prices.json from Yahoo Finance / Stooq
 ```
 
 - **The host page is the server.** `host.html` runs the whole market in the browser: prices, orders, portfolios, events and the leaderboard. Phones only send orders and display what the host tells them.
 - **Phones connect peer-to-peer** using [PeerJS](https://peerjs.com/) (WebRTC data channels). PeerJS's free public signalling server introduces each phone to the host. After that, data flows directly between them.
-- **Opening prices** come from `data/prices.json`, which a scheduled GitHub Action refreshes each weekday morning. When the host page loads, it takes those prices as the "opening bell" values. From then on the market runs on its own.
+- **Opening prices** come from `docs/data/prices.json`, which a scheduled GitHub Action refreshes each weekday morning. When the host page loads, it takes those prices as the "opening bell" values. From then on the market runs on its own.
 - **The price model** for each tick (one second) combines:
   - random noise, scaled to each commodity's volatility;
   - drift from any active events (crash, bubble and so on);
@@ -66,14 +66,14 @@ The whole thing is static HTML, CSS and JavaScript, so it runs on **GitHub Pages
    ```
 
    Then create a GitHub repository (for example `UoHStockMarketSimulator`) and push this folder to it.
-2. In the repository, go to **Settings → Pages**. Set **Source** to *Deploy from a branch*, **Branch** to `main` and the folder to `/ (root)`, then save.
-3. Go to **Settings → Actions → General → Workflow permissions** and choose **Read and write permissions**. The price updater commits `data/prices.json`, so it needs this.
+2. In the repository, go to **Settings → Pages**. Set **Source** to *Deploy from a branch*, **Branch** to `main` and the folder to `/docs`, then save.
+3. Go to **Settings → Actions → General → Workflow permissions** and choose **Read and write permissions**. The price updater commits `docs/data/prices.json`, so it needs this.
 4. Go to the **Actions** tab, open **Update opening prices** and click **Run workflow** once. This replaces the seed prices with fresh ones. After that it runs automatically at about 06:15 UK time on weekdays.
 5. The site will be at `https://<your-username>.github.io/<repo-name>/`. For example: `https://drdukegledhill.github.io/UoHStockMarketSimulator/`.
 
 A custom domain works too (for example `market.drduke.uk`). Add it under **Settings → Pages → Custom domain**.
 
-> The `.nojekyll` file tells GitHub Pages to serve the files as they are. Leave it in place.
+> The `docs/.nojekyll` file tells GitHub Pages to serve the files as they are. Leave it in place.
 
 ## Running a session
 
@@ -164,7 +164,7 @@ Caveats:
 
 Almost everything lives in two files.
 
-**`js/config.js`**
+**`docs/js/config.js`**
 
 - `APP`: the title, the course name and URL, the debrief selling points, and an optional second button such as an Open Day booking link (`APP.course.secondary.url`).
 - `COMMODITIES`: the five commodities, their colours, volatility, fallback prices and data symbols. Adding or swapping commodities works, but the events in `events.js` refer to these symbols by name.
@@ -172,19 +172,19 @@ Almost everything lives in two files.
 - `MARKET`: how strongly trading moves prices, how much herding momentum there is, and mean reversion.
 - `NETWORK`: PeerJS and ICE (STUN/TURN) settings.
 
-**`js/events.js`**
+**`docs/js/events.js`**
 
 The events, their headlines, how much they move each price, and the debrief lesson and module for each one. Add your own by copying an existing entry.
 
 **Brand**
 
-- Colours are CSS variables at the top of `css/style.css`: navy `#1A1464` and yellow `#FDE580`, from the corporate template.
-- Logos are in `assets/`, resized from the official brand files.
+- Colours are CSS variables at the top of `docs/css/style.css`: navy `#1A1464` and yellow `#FDE580`, from the corporate template.
+- Logos are in `docs/assets/`, resized from the official brand files.
 - The typeface is Arial, as in the corporate PowerPoint template.
 
 **Check each recruitment cycle**
 
-Module names, accreditations and the course URL (it contains the academic year) all go out of date. Update them in `config.js` and `events.js`.
+Module names, accreditations and the course URL (it contains the academic year) all go out of date. Update them in `docs/js/config.js` and `docs/js/events.js`.
 
 ## Networking: what can go wrong
 
@@ -203,7 +203,7 @@ If phones can't connect:
 
 - **Ask applicants to switch off Wi-Fi and use mobile data**, or the other way round. This fixes most cases.
 - **Put the laptop on a phone hotspot** so that it is on a simpler network.
-- **Add a TURN relay server**, the proper fix. It relays traffic when a direct route fails. Several providers offer free or cheap tiers. Add the details to `NETWORK.peerOptions.config.iceServers` in `js/config.js`:
+- **Add a TURN relay server**, the proper fix. It relays traffic when a direct route fails. Several providers offer free or cheap tiers. Add the details to `NETWORK.peerOptions.config.iceServers` in `docs/js/config.js`:
 
   ```js
   { urls: 'turn:turn.example.com:443?transport=tcp', username: '...', credential: '...' }
@@ -225,27 +225,33 @@ Capacity: the host sends one small update per phone per second. A normal laptop 
 ## Project structure
 
 ```
-index.html              Landing page: join with a code, open the big screen, rehearsal mode
-host.html               Big screen and market engine (open this on the projector laptop)
-play.html               Phone page
-control.html            Stand-alone control panel (second window, or presenter's phone)
-css/style.css           All styling (University of Huddersfield brand)
-js/config.js            Settings, commodities, course details, networking
-js/events.js            Market events, headlines and debrief lessons
-js/engine.js            Market simulation: prices, orders, events, bots, results
-js/net.js               PeerJS and same-browser (rehearsal) transports
-js/host.js              Host page logic: networking, rendering, persistence
-js/play.js              Phone logic
-js/controls.js          Control panel UI (shared by host drawer and control.html)
-js/chart.js             Canvas line charts and sparklines
-js/names.js             Name generator and a basic name filter
-js/ui.js                Formatting, QR codes, sounds, storage helpers
-vendor/                 PeerJS 1.5.5 and qrcode-generator 2.0.4, bundled so no CDN is needed
-data/prices.json        Opening prices (written by the GitHub Action)
+README.md                 This file
+package.json              Handy scripts (npm run prices, npm run serve); no dependencies
 scripts/fetch-prices.mjs  Price fetcher used by the Action
-setup/update-prices.yml  Weekday price update (move to .github/workflows/)
-assets/                 Logos and icons
-docs/                   Screenshots for this README
+setup/update-prices.yml   Weekday price update (move to .github/workflows/)
+screenshots/              Screenshots for this README (not published)
+
+docs/                     THE WEBSITE (GitHub Pages serves this folder)
+  index.html              Landing page: join with a code, open the big screen, rehearsal mode
+  host.html               Big screen and market engine (open this on the projector laptop)
+  play.html               Phone page
+  control.html            Stand-alone control panel (second window, or presenter's phone)
+  .nojekyll               Tells GitHub Pages to serve files as they are
+  css/style.css           All styling (University of Huddersfield brand)
+  js/config.js            Settings, commodities, course details, networking
+  js/events.js            Market events, headlines and debrief lessons
+  js/engine.js            Market simulation: prices, orders, events, bots, results
+  js/net.js               PeerJS and same-browser (rehearsal) transports
+  js/host.js              Host page logic: networking, rendering, persistence
+  js/play.js              Phone logic
+  js/control.js           Stand-alone control panel page logic
+  js/controls.js          Control panel UI (shared by host drawer and control.html)
+  js/chart.js             Canvas line charts and sparklines
+  js/names.js             Name generator and a basic name filter
+  js/ui.js                Formatting, QR codes, sounds, storage helpers
+  vendor/                 PeerJS 1.5.5 and qrcode-generator 2.0.4, bundled so no CDN is needed
+  data/prices.json        Opening prices (written by the GitHub Action)
+  assets/                 Logos and icons
 ```
 
 There is no build step. Edit a file, commit, and GitHub Pages serves it.
@@ -255,7 +261,7 @@ There is no build step. Edit a file, commit, and GitHub Pages serves it.
 ES modules need a web server (opening the files directly with `file://` won't work). Run:
 
 ```bash
-python3 -m http.server 8000
+python3 -m http.server 8000 --directory docs
 # then open http://localhost:8000/
 ```
 
