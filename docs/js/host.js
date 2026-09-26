@@ -6,6 +6,7 @@ import { APP, COMMODITIES, DEFAULT_SETTINGS } from './config.js';
 import { Market, SYMS } from './engine.js';
 import { createHost, netMode } from './net.js';
 import { mountControls } from './controls.js';
+import { mountFooter } from './footer.js';
 import { lineChart, sparkline } from './chart.js';
 import { randomName, cleanName, isGeneratedName } from './names.js';
 import {
@@ -404,6 +405,7 @@ function loop(renderOnly = false) {
 
 // ------------------------------------------------------------------ rendering
 function buildStaticUI() {
+  mountFooter('host');
   document.title = `${APP.title} · Room ${room}`;
   $('#title').textContent = APP.title;
   $('#subtitle').textContent = `${APP.subtitle} · ${APP.course.name}`;
@@ -437,12 +439,17 @@ function buildTiles(container, withBlurb) {
       <div class="name">${esc(c.name)}</div>
       <div class="price"><span data-f="price"></span><span class="unit">/${esc(c.unit)}</span></div>
       <div class="chg" data-f="chg"></div>
-      ${withBlurb ? `<div class="blurb">${esc(c.blurb)}</div>` : '<canvas aria-hidden="true"></canvas>'}
+      ${withBlurb ? `<div class="blurb">${esc(c.blurb)}</div>` : `<canvas aria-hidden="true"></canvas>
+      <div class="flow quiet" data-f="flow" title="Buyers vs sellers over the last few seconds">
+        <div class="flow-bar"><i class="b" style="width:50%"></i><i class="s" style="width:50%"></i></div>
+        <span class="flow-lbl">Quiet</span>
+      </div>`}
     </div>`).join('');
 }
 
 const prevPrice = {};
 function updateTiles(container) {
+  const balance = market.flowBalance();
   for (const c of COMMODITIES) {
     const el = container.querySelector(`[data-sym="${c.sym}"]`);
     if (!el) continue;
@@ -454,6 +461,17 @@ function updateTiles(container) {
     chg.className = 'chg ' + dirClass(ch);
     const cv = el.querySelector('canvas');
     if (cv) sparkline(cv, market.history[c.sym].slice(-150), c.color, 'dark');
+    const flow = el.querySelector('[data-f="flow"]');
+    if (flow) {
+      const { share, activity } = balance[c.sym];
+      const quiet = activity < 0.01;
+      const b = quiet ? 50 : Math.round(share * 100);
+      flow.classList.toggle('quiet', quiet);
+      flow.querySelector('.b').style.width = `${b}%`;
+      flow.querySelector('.s').style.width = `${100 - b}%`;
+      flow.querySelector('.flow-lbl').textContent = quiet ? 'Quiet'
+        : share >= 0.6 ? `Buyers ${b}%` : share <= 0.4 ? `Sellers ${100 - b}%` : 'Balanced';
+    }
     const key2 = container.id + c.sym;
     if (prevPrice[key2] != null && Math.abs(p / prevPrice[key2] - 1) > 0.012) {
       el.classList.remove('flash-up', 'flash-down');
@@ -506,7 +524,7 @@ function render(board) {
   } else if (view === 'live') {
     updateTiles($('#tiles-live'));
     drawMainChart($('#chart-live'));
-    const top = board.slice(0, 10);
+    const top = board.slice(0, 7);
     $('#board-list').innerHTML = top.length ? top.map((r) => `
       <li><span class="rk">${r.rank}</span>
       <span class="nm">${esc(r.name)}${r.bot ? '<em>bot</em>' : ''}</span>

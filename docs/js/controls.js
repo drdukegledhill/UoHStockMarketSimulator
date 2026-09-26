@@ -6,6 +6,7 @@
 
 import { COMMODITIES, APP } from './config.js';
 import { EVENTS } from './events.js';
+import { VERSION } from './version.js';
 import { esc, fmtPrice, fmtPct, fmtMoney, fmtClock, qrSvg, dirClass } from './ui.js';
 
 const PHASE_LABEL = { lobby: 'Pre-market (lobby)', open: 'Market open', halted: 'Trading halted', paused: 'Paused', closed: 'Closed (debrief)' };
@@ -17,7 +18,7 @@ export function mountControls(root, send, { isHost = false, onOpenWindow = null,
   root.innerHTML = `
   <div class="ctl">
     <h2><span>Control panel</span>${onClose ? '<button class="btn ghost" data-a="close" style="padding:6px 10px">Close</button>' : ''}</h2>
-    <p class="meta">Room <b data-f="room">----</b> · <span data-f="net"></span></p>
+    <p class="meta">Room <b data-f="room">----</b> · <span data-f="net"></span> · v${VERSION}</p>
     <div class="status-line"><i class="dot" data-f="dot"></i><span data-f="status">Starting...</span></div>
 
     <h3>Session</h3>

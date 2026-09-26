@@ -6,6 +6,7 @@ import { APP, COMMODITIES } from './config.js';
 import { connectToHost, netMode } from './net.js';
 import { lineChart, sparkline } from './chart.js';
 import { randomName, cleanName } from './names.js';
+import { mountFooter } from './footer.js';
 import { $, $$, esc, fmtPrice, fmtMoney, fmtPct, fmtQty, fmtClock, arrow, dirClass, store as localStore, sessionStore, keepAwake, toast } from './ui.js';
 
 // Real phones remember who they are across reloads. In rehearsal mode every
@@ -384,4 +385,5 @@ shc.addEventListener('pointerleave', unhover);
 shc.addEventListener('touchend', unhover);
 
 window.addEventListener('resize', () => renderAll());
+mountFooter('player');
 initJoin();

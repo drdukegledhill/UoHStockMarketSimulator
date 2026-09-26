@@ -3,6 +3,9 @@
 import { mountControls } from './controls.js';
 import { connectToHost } from './net.js';
 import { $, toast } from './ui.js';
+import { mountFooter } from './footer.js';
+
+mountFooter('control');
 
 const q = new URLSearchParams(location.search);
 const room = (q.get('room') || '').toUpperCase();

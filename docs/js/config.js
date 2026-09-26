@@ -62,11 +62,16 @@ export const DEFAULT_SETTINGS = {
 
 // Market microstructure. Tweak with care.
 export const MARKET = {
-  impactAlpha: 0.03,     // immediate price impact of the whole room's worth of cash trading at once
-  pressureBeta: 0.006,   // follow-through drift per tick from recent order flow (herding)
+  impactAlpha: 0.06,     // immediate price impact of the whole room's worth of cash trading at once
+  pressureBeta: 0.012,   // follow-through drift per tick from recent order flow (herding)
   pressureDecay: 0.9,
   meanReversion: 0.002,  // gentle pull back towards the "fundamental" price
-  minLiquidityPlayers: 8 // treat small rooms as at least this many players for impact
+  minLiquidityPlayers: 8, // treat small rooms as at least this many players for impact
+  flowDecay: 0.93,        // how quickly the buyers-vs-sellers bars forget old trades (per tick)
+  herdWindowSec: 20,      // crowd headline: look at trades in this many seconds...
+  herdShare: 0.5,         // ...and fire if at least this share of traders piled the same way
+  herdMinTraders: 3,      // ...and at least this many people did
+  herdCooldownSec: 90,    // don't repeat a crowd headline for the same commodity too often
 };
 
 // Networking. With no settings PeerJS uses its free public signalling server

@@ -155,3 +155,19 @@ export const EVENTS = [
 ];
 
 export const EVENT_MAP = Object.fromEntries(EVENTS.map((e) => [e.key, e]));
+
+// Automatic headline when the room itself stampedes into or out of a commodity.
+export const HERD = {
+  buy: {
+    label: 'Herd buying',
+    headlines: ['Frenzied buying of {name} on the trading floor', 'Traders pile into {name}: is it a bubble?', 'Everyone wants {name}! Buyers stampede in'],
+    lesson: 'Herd behaviour: when everyone buys the same thing at once, the crowd pushes the price up, not the news. Following the herd feels safe but often means buying at the top.',
+    module: 'Investment, Portfolio and Risk Management (Year 3 option)',
+  },
+  sell: {
+    label: 'Panic selling',
+    headlines: ['Panic selling of {name} on the trading floor', 'Traders dump {name} in a rush for the exit', 'Sell-off: nobody wants {name}'],
+    lesson: 'Panic selling: when everyone rushes for the exit together, the price falls further than the news justifies. Calm traders can buy from panicking ones at a discount.',
+    module: 'Investment, Portfolio and Risk Management (Year 3 option)',
+  },
+};

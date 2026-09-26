@@ -8,7 +8,7 @@
 // ---------------------------------------------------------------------------
 
 import { COMMODITIES, MARKET, DEFAULT_SETTINGS } from './config.js';
-import { EVENTS, EVENT_MAP } from './events.js';
+import { EVENTS, EVENT_MAP, HERD } from './events.js';
 import { randomName } from './names.js';
 
 export const SYMS = COMMODITIES.map((c) => c.sym);
@@ -39,6 +39,9 @@ export class Market {
     this.history = Object.fromEntries(SYMS.map((s) => [s, [open[s]]]));
     this.pressure = Object.fromEntries(SYMS.map((s) => [s, 0]));
     this.flow = Object.fromEntries(SYMS.map((s) => [s, { buy: 0, sell: 0 }]));
+    this.heat = Object.fromEntries(SYMS.map((s) => [s, { buy: 0, sell: 0 }])); // recent, decaying
+    this.recentOrders = []; // { tick, id, sym, side, bot } for crowd detection
+    this.lastHerd = {};     // `${sym}:${side}` -> tick of last crowd headline
     this.phase = 'lobby'; // lobby | open | halted | paused | closed
     this.tick = 0;
     this.haltUntil = 0;
@@ -161,6 +164,7 @@ export class Market {
       this.prices[sym] = price * Math.exp(MARKET.impactAlpha * x);
       this.pressure[sym] += x;
       this.flow[sym].buy += spend;
+      this.heat[sym].buy += spend;
     } else if (side === 'sell') {
       const held = p.holdings[sym];
       const f = Math.min(1, Math.max(0, +fraction || 0));
@@ -178,11 +182,13 @@ export class Market {
       this.prices[sym] = price * Math.exp(-MARKET.impactAlpha * x);
       this.pressure[sym] -= x;
       this.flow[sym].sell += notional;
+      this.heat[sym].sell += notional;
     } else {
       return { ok: false, msg: 'Unknown order type.' };
     }
     p.trades++;
     this.totalTrades++;
+    this.recentOrders.push({ tick: this.tick, id: p.id, sym, side, bot: p.bot });
     return { ok: true, side, sym, qty, price: fill, notional, fee: feePaid };
   }
 
@@ -237,6 +243,7 @@ export class Market {
       this.movePrices();
       this.runBots();
       this.checkCircuitBreaker();
+      this.checkHerd();
       if (this.settings.autopilot && this.nextAutoTick !== null && this.tick >= this.nextAutoTick) {
         const perSec = 1000 / this.settings.tickMs;
         if (this.remainingTicks > 45 * perSec) this.fireRandomEvent();
@@ -273,6 +280,8 @@ export class Market {
         + c.vol * volMult[s] * gauss();
       this.prices[s] = Math.exp(lp + r);
       this.pressure[s] *= MARKET.pressureDecay;
+      this.heat[s].buy *= MARKET.flowDecay;
+      this.heat[s].sell *= MARKET.flowDecay;
     }
   }
 
@@ -289,6 +298,48 @@ export class Market {
         this.halt(`Circuit breaker: ${c.name} down ${fall.toFixed(0)}% in a minute. Trading halted.`);
         this.logEvent(EVENT_MAP.halt, 'Automatic circuit breaker');
         return;
+      }
+    }
+  }
+
+  // Buyers-vs-sellers balance for each commodity over the last few seconds.
+  // share: 0..1 buyers' share of recent trading; activity: recent trading as a
+  // fraction of the room's total cash (0 = quiet).
+  flowBalance() {
+    const L = this.liquidity();
+    return Object.fromEntries(SYMS.map((s) => {
+      const { buy, sell } = this.heat[s];
+      const total = buy + sell;
+      return [s, { share: total > 0 ? buy / total : 0.5, activity: total / L }];
+    }));
+  }
+
+  // Crowd headline: if a big share of traders piled into (or out of) the same
+  // commodity within the window, say so on the ticker and log it for the debrief.
+  checkHerd() {
+    const perSec = 1000 / this.settings.tickMs;
+    const windowTicks = Math.round(MARKET.herdWindowSec * perSec);
+    this.recentOrders = this.recentOrders.filter((o) => this.tick - o.tick <= windowTicks);
+    const active = [...this.players.values()].filter((p) => !p.kicked);
+    const humans = active.filter((p) => !p.bot);
+    const countHumans = humans.length >= MARKET.herdMinTraders; // ignore bots when enough real people
+    const room = countHumans ? humans.length : active.length;
+    if (room < MARKET.herdMinTraders) return;
+    const need = Math.max(MARKET.herdMinTraders, Math.ceil(room * MARKET.herdShare));
+    for (const side of ['buy', 'sell']) {
+      for (const s of SYMS) {
+        const key = `${s}:${side}`;
+        if (this.tick - (this.lastHerd[key] ?? -1e9) < MARKET.herdCooldownSec * perSec) continue;
+        const who = new Set(this.recentOrders
+          .filter((o) => o.sym === s && o.side === side && (!countHumans || !o.bot))
+          .map((o) => o.id));
+        if (who.size < need) continue;
+        this.lastHerd[key] = this.tick;
+        const h = HERD[side];
+        const text = h.headlines[Math.floor(Math.random() * h.headlines.length)].replace('{name}', BY_SYM[s].name);
+        this.pushNews(text, side === 'buy' ? 'news' : 'breaking', 'Trading floor');
+        this.timeline.push({ tick: this.tick, key: `herd-${side}`, label: `${h.label}: ${BY_SYM[s].name}`, headline: text, lesson: h.lesson, module: h.module });
+        return; // one crowd headline per tick is plenty
       }
     }
   }

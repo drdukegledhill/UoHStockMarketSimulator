@@ -54,7 +54,7 @@ The whole thing is static HTML, CSS and JavaScript, so it runs on **GitHub Pages
 - **The price model** for each tick (one second) combines:
   - random noise, scaled to each commodity's volatility;
   - drift from any active events (crash, bubble and so on);
-  - order-flow pressure, so that when the room piles into one commodity its price rises, and herding creates momentum;
+  - order-flow pressure, so that when the room piles into one commodity its price rises, and herding creates momentum. With the default settings, one person's trade barely registers, a third of the room going all in moves a price by about 5%, and the whole room by about 17%;
   - a gentle pull back towards the "fundamental" price, which events can move permanently.
 
 ## Setting up GitHub Pages
@@ -139,6 +139,8 @@ A custom domain works too (for example `market.drduke.uk`). Add it under **Setti
 
 Set **Target commodity** before clicking an event to aim a flash crash, bubble or rumour at a specific commodity.
 
+**Crowd behaviour is visible.** Each price tile on the big screen has a buyers-vs-sellers bar showing the balance of trading over the last few seconds (it reads "Quiet" when little is happening). If half or more of the traders pile into, or out of, the same commodity within 20 seconds, the ticker runs a headline such as "Frenzied buying of Silver on the trading floor" or "Panic selling of Copper". It also appears in the debrief with a lesson on herd behaviour. Bots are ignored for this when at least three real people are playing.
+
 The **automatic circuit breaker** halts trading if any commodity falls 12% or more within a minute. The threshold is configurable.
 
 **Phone remote:** in the control panel, click **Show phone remote QR code** and scan it with your own phone. Anyone with that code has full control, so don't show it on the projector for long.
@@ -169,12 +171,16 @@ Almost everything lives in two files.
 - `APP`: the title, the course name and URL, the debrief selling points, and an optional second button such as an Open Day booking link (`APP.course.secondary.url`).
 - `COMMODITIES`: the five commodities, their colours, volatility, fallback prices and data symbols. Adding or swapping commodities works, but the events in `events.js` refer to these symbols by name.
 - `DEFAULT_SETTINGS`: session length, starting cash, commission, headline warning time, autopilot, circuit breaker, custom names and bots on the leaderboard. Most of these can also be changed in the control panel before the opening bell. The panel remembers them in that browser.
-- `MARKET`: how strongly trading moves prices, how much herding momentum there is, and mean reversion.
+- `MARKET`: how strongly trading moves prices (`impactAlpha`, `pressureBeta`), mean reversion, and the crowd-headline rules (`herdWindowSec`, `herdShare`, `herdMinTraders`, `herdCooldownSec`). Halve `impactAlpha` and `pressureBeta` if trading moves prices too much for your group.
 - `NETWORK`: PeerJS and ICE (STUN/TURN) settings.
 
 **`docs/js/events.js`**
 
 The events, their headlines, how much they move each price, and the debrief lesson and module for each one. Add your own by copying an existing entry.
+
+**`docs/js/version.js`**
+
+The version number (bottom left of every page and in the control panel) and the copyright line (bottom right). **Bump `VERSION` each time you publish a change.** It's the quickest way to check that a projector or phone has picked up the new code rather than a cached copy.
 
 **Brand**
 
@@ -253,6 +259,8 @@ docs/                     THE WEBSITE (GitHub Pages serves this folder)
   js/chart.js             Canvas line charts and sparklines
   js/names.js             Name generator and a basic name filter
   js/ui.js                Formatting, QR codes, sounds, storage helpers
+  js/version.js           Version number and copyright credit
+  js/footer.js            Adds the version and copyright footer to each page
   vendor/                 PeerJS 1.5.5 and qrcode-generator 2.0.4, bundled so no CDN is needed
   data/prices.json        Opening prices (written by the GitHub Action)
   assets/                 Logos and icons
