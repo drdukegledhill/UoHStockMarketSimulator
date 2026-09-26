@@ -586,7 +586,7 @@ function renderNews() {
   const latest = market.news.at(-1);
   if (latest && latest.id !== lastNewsId) {
     lastNewsId = latest.id;
-    tickerFlashUntil = Date.now() + 2000;
+    tickerFlashUntil = Date.now() + 6000;
     const ticker = $('#ticker');
     ticker.classList.remove('flash');
     void ticker.offsetWidth;
