@@ -224,8 +224,11 @@ html:has(body.host) { overflow: hidden; }
 .ticker .tag.breaking { background: var(--magenta); color: #fff; }
 .ticker .tag.rumour { background: var(--gold); color: #fff; }
 .ticker .tag.halt { background: var(--magenta); color: #fff; }
-.ticker .text { display: flex; align-items: center; padding: 0 1.6vw; font-size: 3.4vh; font-weight: 700; flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.ticker .prev { display: block; align-self: center; padding: 0 1.6vw; font-size: 1.9vh; opacity: .7; max-width: 32vw; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.ticker .text { display: flex; align-items: center; padding: 0 1.6vw; font-size: 3.4vh; font-weight: 700; flex: 1; min-width: 0; overflow: hidden; }
+.ticker .track { display: flex; width: max-content; white-space: nowrap; animation: ticker-scroll var(--ticker-duration, 30s) linear infinite; }
+.ticker .track.flash-static { animation: none; }
+.ticker .run { flex: none; padding-right: 4vw; }
+@keyframes ticker-scroll { to { transform: translateX(-50%); } }
 .ticker.flash { animation: tick 0.9s ease 2; }
 @keyframes tick { 50% { background: #fff; } }
 

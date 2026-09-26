@@ -27,6 +27,8 @@ let ctlBC = null;
 const debugLog = []; // last few orders, for troubleshooting from the console
 let renderControls = null;
 let lastNewsId = 0;
+let tickerSignature = '';
+let tickerFlashUntil = 0;
 let lastView = null;
 let lastChipsSig = '';
 let tilesBuilt = false;
@@ -408,7 +410,7 @@ function buildStaticUI() {
   mountFooter('host');
   document.title = `${APP.title} · Room ${room}`;
   $('#title').textContent = APP.title;
-  $('#subtitle').textContent = `${APP.subtitle} · ${APP.course.name}`;
+  $('#subtitle').textContent = APP.subtitle;
   const url = joinUrl();
   $('#qr-big').innerHTML = qrSvg(url, 'Scan to join');
   $('#qr-small').innerHTML = qrSvg(url, 'Scan to join');
@@ -580,22 +582,40 @@ function drawDebrief() {
     : '<li class="empty">A quiet day on the markets: no events were triggered.</li>';
 }
 
-let tickerTimer = null;
 function renderNews() {
-  const items = market.news;
-  const last = items[items.length - 1];
-  if (!last || last.id === lastNewsId) return;
-  lastNewsId = last.id;
+  const latest = market.news.at(-1);
+  if (latest && latest.id !== lastNewsId) {
+    lastNewsId = latest.id;
+    tickerFlashUntil = Date.now() + 2000;
+    const ticker = $('#ticker');
+    ticker.classList.remove('flash');
+    void ticker.offsetWidth;
+    ticker.classList.add('flash');
+  }
+
+  const fresh = market.news.filter((item) => (market.tick - item.tick) * market.settings.tickMs < 30000);
+  const flashing = latest && Date.now() < tickerFlashUntil;
+  const visible = flashing ? [latest] : fresh;
+  const signature = `${flashing ? 'flash' : 'feed'}:${visible.map((item) => item.id).join(',')}`;
+  if (signature === tickerSignature) return;
+  tickerSignature = signature;
+
   const tag = $('#news-tag');
   const labels = { breaking: 'Breaking', rumour: 'Rumour', halt: 'Halt', bell: 'Bell', news: 'News' };
-  tag.textContent = labels[last.kind] || 'News';
-  tag.className = 'tag ' + last.kind;
-  $('#news-text').textContent = last.text;
-  const prev = items.slice(-4, -1).reverse().map((n) => n.text).join('   ·   ');
-  $('#news-prev').textContent = prev;
-  const t = $('#ticker');
-  t.classList.remove('flash'); void t.offsetWidth; t.classList.add('flash');
-  clearTimeout(tickerTimer);
+  tag.textContent = flashing ? labels[latest.kind] || 'News' : 'News';
+  tag.className = `tag${flashing && latest.kind ? ` ${latest.kind}` : ''}`;
+
+  const messages = visible.length ? visible.map((item) => item.text) : ['Markets trading. Waiting for the next headline.'];
+  const text = $('#news-text');
+  const run = document.createElement('span');
+  run.className = 'run';
+  run.textContent = `${messages.join('   ·   ')}   ·   `;
+  const copy = run.cloneNode(true);
+  copy.setAttribute('aria-hidden', 'true');
+  text.replaceChildren(run, copy);
+  text.classList.toggle('flash-static', !!flashing);
+  const duration = Math.max(18, Math.min(45, run.textContent.length * 0.22));
+  text.style.setProperty('--ticker-duration', `${duration}s`);
 }
 
 // ------------------------------------------------------------------ keyboard + drawer
