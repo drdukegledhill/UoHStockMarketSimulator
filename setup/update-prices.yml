@@ -1,0 +1,37 @@
+name: Update opening prices
+
+on:
+  schedule:
+    # 05:17 UTC on weekdays (06:17 in summer, 05:17 in winter, UK time).
+    # GitHub may run scheduled jobs a little late at busy times.
+    - cron: '17 5 * * 1-5'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-prices
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Fetch latest closing prices
+        run: node scripts/fetch-prices.mjs
+      - name: Commit if changed
+        run: |
+          if git diff --quiet -- docs/data/prices.json; then
+            echo "Prices unchanged"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/data/prices.json
+          git commit -m "Update opening prices ($(date -u +%Y-%m-%d))"
+          git push

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1A1464">
+  <title>Market Challenge · University of Huddersfield</title>
+  <meta name="description" content="A live commodities trading game for Accounting and Finance applicants at the University of Huddersfield.">
+  <link rel="icon" href="assets/favicon.png">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="landing">
+  <div class="stairs"></div>
+  <div class="wrap">
+    <img class="logo" src="assets/uoh-logo-white.png" alt="University of Huddersfield">
+    <h1>Market Challenge</h1>
+    <p class="lede">A live trading game. Everyone starts with pretend cash, prices start from real market data, and the presenter controls the news. Can you keep your head when the market crashes?</p>
+
+    <div class="cards">
+      <div class="card">
+        <h2>Join a session</h2>
+        <p>Enter the code shown on the big screen.</p>
+        <form class="join-form" id="join" action="play.html">
+          <input name="room" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="CODE" aria-label="Room code" required>
+          <button class="btn yellow" type="submit">Join</button>
+        </form>
+      </div>
+      <div class="card">
+        <h2>Run a session</h2>
+        <p>Open the big screen on the laptop connected to the projector. Phones join by QR code.</p>
+        <a class="btn yellow" href="host.html" style="display:inline-block;text-decoration:none">Open the big screen</a>
+        <p class="small"><a href="host.html?net=local">Rehearsal mode</a>: runs entirely in this browser with test phones in extra windows, no network needed.</p>
+      </div>
+    </div>
+    <p class="small" style="margin-top:32px">Huddersfield Business School · Accounting and Finance BSc(Hons). A simulation with pretend money, for education only.</p>
+  </div>
+  <script>
+    document.getElementById('join').addEventListener('submit', function (e) {
+      var i = this.querySelector('input');
+      i.value = i.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    });
+  </script>
+</body>
+</html>

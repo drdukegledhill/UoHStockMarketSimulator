@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1A1464">
+  <title>Market Challenge · Trade</title>
+  <link rel="icon" href="assets/favicon.png">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="vendor/peerjs.min.js"></script>
+  <script type="module" src="js/play.js"></script>
+</head>
+<body class="player">
+  <header class="p-head">
+    <img src="assets/uoh-logo-small-white.png" alt="University of Huddersfield">
+    <div class="t">Market Challenge<small id="room-label">Huddersfield Business School</small></div>
+    <div class="conn" id="conn"><i></i><span id="conn-text">Connecting...</span></div>
+  </header>
+
+  <!-- Enter a room code (no ?room= in the link) -->
+  <section class="screen p-wrap p-join hidden" id="screen-code">
+    <div class="card">
+      <h1>Join the market</h1>
+      <p>Enter the four-character code shown on the big screen.</p>
+      <form id="code-form">
+        <input class="codefield" id="code-input" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Room code" placeholder="CODE">
+        <p class="err" id="code-err"></p>
+        <button class="btn" type="submit">Continue</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Pick a name -->
+  <section class="screen p-wrap p-join hidden" id="screen-join">
+    <div class="card">
+      <h1>Welcome, trader</h1>
+      <p>You get pretend cash to trade five real commodities. Watch the news, buy low, sell high. The richest trader at the closing bell wins.</p>
+      <div class="namebox">
+        <span class="nm" id="name-display"></span>
+        <input id="name-input" class="hidden" maxlength="20" placeholder="Your trader name" aria-label="Your trader name">
+        <button type="button" id="reroll">New name</button>
+      </div>
+      <p style="margin:-4px 0 12px"><button type="button" class="btn ghost hidden" id="custom-toggle" style="padding:6px 10px;font-size:14px">Type my own name</button></p>
+      <p class="err" id="join-err" role="alert"></p>
+      <button class="btn" id="join-btn">Join the trading floor</button>
+      <p class="fine" style="margin-top:12px">No sign-up and no personal data: just a nickname for the leaderboard. It's a simulation with pretend money, not financial advice.</p>
+    </div>
+  </section>
+
+  <!-- Game -->
+  <section class="screen p-wrap hidden" id="screen-game">
+    <div class="card summary">
+      <div class="who"><span id="me-name"></span><span class="rank" id="me-rank"></span></div>
+      <div class="val" id="me-value">$0</div>
+      <div class="sub"><span id="me-ret"></span><span id="me-cash"></span></div>
+    </div>
+    <div class="phase-bar" id="phase-bar"><span id="phase-text"></span><span class="clk" id="phase-clock"></span></div>
+    <div class="newsbar hidden" id="newsbar" aria-live="polite"></div>
+    <div class="markets" id="markets"></div>
+    <p class="hint" id="hint"></p>
+  </section>
+
+  <!-- End of session -->
+  <section class="screen p-wrap p-debrief hidden" id="screen-end">
+    <div class="card">
+      <p class="fine" style="margin:0">The closing bell has rung</p>
+      <h1>Your result <span id="end-rank" style="float:right;color:var(--magenta)"></span></h1>
+      <div class="big" id="end-value"></div>
+      <div id="end-ret" style="font-weight:700;font-size:18px"></div>
+      <p class="verdict" id="end-verdict"></p>
+    </div>
+    <div class="card top3"><h2 style="margin:0 0 6px;font-size:18px">Top traders</h2><div id="end-top"></div></div>
+    <div class="card">
+      <h2 style="margin:0 0 4px;font-size:18px">What happened, and why it matters</h2>
+      <ol id="end-events"></ol>
+    </div>
+    <div class="card" style="background:var(--navy);color:#fff">
+      <h2 style="margin:0;font-size:20px">Enjoyed that? Do it for real.</h2>
+      <p style="margin:6px 0 0;color:var(--yellow);font-weight:700" id="end-course"></p>
+      <ul class="hl" id="end-highlights"></ul>
+      <div class="ctas">
+        <a class="btn yellow" id="end-cta" href="#" target="_blank" rel="noopener">Explore the course</a>
+        <a class="btn ghost hidden" id="end-cta2" href="#" target="_blank" rel="noopener"></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="screen p-wrap hidden" id="screen-kicked">
+    <div class="card"><h1 style="color:var(--navy)">You've left the market</h1><p>The presenter removed you from this session. Ask them if you think this was a mistake.</p></div>
+  </section>
+
+  <!-- Trade sheet -->
+  <div class="sheet-bg" id="sheet-bg"></div>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="sh-name">
+    <div class="grab"></div>
+    <div class="top">
+      <div><h2><i></i><span id="sh-name"></span></h2><div class="unit" id="sh-unit"></div></div>
+      <button class="close" id="sh-close" aria-label="Close">&#10005;</button>
+    </div>
+    <div class="bigpx" id="sh-price"></div>
+    <canvas id="sh-chart" role="img" aria-label="Price chart. Touch to see earlier prices."></canvas>
+    <p class="blurb" id="sh-blurb"></p>
+    <div class="pos" id="sh-pos"></div>
+    <div class="lbl">Buy (spend)</div>
+    <div class="trade buy" id="buy-row"></div>
+    <div class="lbl">Sell (of what you own)</div>
+    <div class="trade sell" id="sell-row" style="grid-template-columns:repeat(3,1fr)"></div>
+    <div class="cashline" id="sh-cash"></div>
+  </div>
+</body>
+</html>

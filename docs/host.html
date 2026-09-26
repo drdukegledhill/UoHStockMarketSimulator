@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Market Challenge · Big screen</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="assets/favicon.png">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="vendor/peerjs.min.js"></script>
+  <script type="module" src="js/host.js"></script>
+</head>
+<body class="host">
+  <header class="topbar">
+    <img class="logo" src="assets/uoh-logo-white.png" alt="University of Huddersfield">
+    <div class="titles">
+      <h1 id="title">Market Challenge</h1>
+      <p id="subtitle"></p>
+    </div>
+    <div class="status">
+      <span id="net-warn" class="pill paused hidden"></span>
+      <span id="count">0 traders</span>
+      <span id="phase" class="pill">Pre-market</span>
+      <span id="clock" class="clock">10:00</span>
+    </div>
+  </header>
+
+  <main>
+    <!-- LOBBY -->
+    <section id="view-lobby" class="view">
+      <div class="join-hero">
+        <h2>Scan to join the market</h2>
+        <div class="qr" id="qr-big"></div>
+        <p class="or">or go to the site and enter code</p>
+        <div class="code room-code">----</div>
+        <div class="url" id="join-url"></div>
+      </div>
+      <div class="lobby-right">
+        <div class="how">
+          <div><b>1</b><h3>Join</h3><p>Scan the QR code. You start with <span id="start-cash">$10,000</span> of pretend cash.</p></div>
+          <div><b>2</b><h3>Trade</h3><p>Buy and sell five real commodities. Prices start from yesterday's real closing prices.</p></div>
+          <div><b>3</b><h3>React</h3><p>Watch the headlines. News moves markets. The richest trader at the closing bell wins.</p></div>
+        </div>
+        <div class="floor">
+          <h3>On the trading floor <span id="floor-count">0 joined</span></h3>
+          <div class="chips" id="chips"></div>
+        </div>
+      </div>
+      <div class="tiles" id="tiles-lobby"></div>
+    </section>
+
+    <!-- LIVE -->
+    <section id="view-live" class="view hidden">
+      <div class="chart-panel">
+        <h2><span>Change since the opening bell</span><small>% change, all five commodities</small></h2>
+        <div class="chart-box"><canvas id="chart-live" role="img" aria-label="Line chart of percentage change since the open for each commodity"></canvas></div>
+      </div>
+      <div class="tiles" id="tiles-live"></div>
+      <div class="side">
+        <div class="board">
+          <h2>Leaderboard <small id="board-n"></small></h2>
+          <ol id="board-list"></ol>
+        </div>
+        <div class="mini-join">
+          <div class="qr" id="qr-small"></div>
+          <div><p>Late? Scan to join, or use code</p><div class="code room-code">----</div></div>
+        </div>
+      </div>
+      <div class="halt-overlay hidden" id="halt"><div><span id="halt-title">Trading halted</span><small id="halt-sub"></small></div></div>
+    </section>
+
+    <!-- DEBRIEF -->
+    <section id="view-debrief" class="view hidden">
+      <div class="chart-panel">
+        <h2><span>How the session played out</span><small>% change since the opening bell, with events marked</small></h2>
+        <div class="chart-box"><canvas id="chart-final" role="img" aria-label="Final chart of percentage change for each commodity with events marked"></canvas></div>
+      </div>
+      <div class="podium">
+        <h2>The closing bell</h2>
+        <div id="podium"></div>
+        <div class="stats" id="stats"></div>
+      </div>
+      <div class="timeline">
+        <h2>What happened, and why it matters</h2>
+        <ol id="timeline-list"></ol>
+      </div>
+      <div class="cta">
+        <h2>Enjoyed that? Do it for real.</h2>
+        <h3 id="cta-course"></h3>
+        <ul id="cta-list"></ul>
+        <div class="row"><div class="qr" id="cta-qr"></div><p>Scan to explore the course and book your place at an Open Day.</p></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="ticker" id="ticker" aria-live="polite">
+    <span class="tag" id="news-tag">News</span>
+    <span class="text" id="news-text">Waiting for the opening bell...</span>
+    <span class="prev" id="news-prev"></span>
+  </footer>
+
+  <button class="ctl-toggle" id="ctl-toggle" aria-label="Open control panel (C)" title="Control panel (C)">&#9881;</button>
+  <aside class="drawer" id="drawer" aria-label="Control panel"></aside>
+</body>
+</html>

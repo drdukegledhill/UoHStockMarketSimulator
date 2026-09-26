@@ -1,0 +1,10 @@
+{
+  "name": "uoh-market-challenge",
+  "private": true,
+  "description": "University of Huddersfield Market Challenge: a live commodities trading game for applicant events.",
+  "type": "module",
+  "scripts": {
+    "prices": "node scripts/fetch-prices.mjs",
+    "serve": "python3 -m http.server 8000"
+  }
+}

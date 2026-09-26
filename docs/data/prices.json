@@ -1,0 +1,13 @@
+{
+  "updated": "2026-09-26T12:00:00.000Z",
+  "asOf": "2026-09-25",
+  "source": "Seed values (Trading Economics)",
+  "currency": "USD",
+  "commodities": {
+    "GOLD": { "name": "Gold", "price": 4278.82, "unit": "oz", "asOf": "2026-09-25", "source": "seed" },
+    "SILVER": { "name": "Silver", "price": 63.946, "unit": "oz", "asOf": "2026-09-25", "source": "seed" },
+    "BRENT": { "name": "Brent Crude", "price": 105.297, "unit": "bbl", "asOf": "2026-09-25", "source": "seed" },
+    "NATGAS": { "name": "Natural Gas", "price": 3.1546, "unit": "MMBtu", "asOf": "2026-09-25", "source": "seed" },
+    "COPPER": { "name": "Copper", "price": 6.6868, "unit": "lb", "asOf": "2026-09-25", "source": "seed" }
+  }
+}
