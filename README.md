@@ -286,6 +286,8 @@ python3 -m http.server 8000 --directory docs
 
 ## Credits and licences
 
+- This project is open source under the [MIT License](LICENSE). Anyone may use, copy, modify, distribute, sublicense, and sell copies, provided the copyright and license notices are retained. Third-party components retain their own licenses, and the University of Huddersfield's name, logos, and other protected marks are not licensed by this permission.
+- Concept by Siân Jones; developed by Dr Duke Gledhill.
 - [PeerJS](https://github.com/peers/peerjs) (MIT) for WebRTC data connections.
 - [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator) by Kazuhiko Arase (MIT) for QR codes.
 - The University of Huddersfield name, logos and brand are the property of the University of Huddersfield. They are used here for official University recruitment activity.

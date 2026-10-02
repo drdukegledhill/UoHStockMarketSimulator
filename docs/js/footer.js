@@ -16,7 +16,7 @@ export function mountFooter(variant = 'page') {
   a.target = '_blank';
   a.rel = 'noopener';
   a.textContent = CREDIT.name;
-  copy.append(`© ${CREDIT.year} `, a);
+  copy.append(`Concept by ${CREDIT.concept} · Developed by `, a, ` © ${CREDIT.year}`);
   f.append(ver, copy);
   document.body.appendChild(f);
   return f;

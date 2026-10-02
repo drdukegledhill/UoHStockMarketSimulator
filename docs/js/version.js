@@ -8,6 +8,7 @@ export const VERSION = '1.2.1';
 export const RELEASED = '2026-09-26';
 
 export const CREDIT = {
+  concept: 'Siân Jones',
   name: 'Dr Duke Gledhill',
   url: 'https://drduke.uk',
   year: 2026,
