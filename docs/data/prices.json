@@ -1,45 +1,45 @@
 {
-  "updated": "2026-10-12T13:07:57.054Z",
-  "asOf": "2026-10-12",
+  "updated": "2026-10-13T12:41:05.212Z",
+  "asOf": "2026-10-13",
   "source": "Yahoo Finance",
   "currency": "USD",
-  "usdPerGbp": 1.3235,
-  "fxAsOf": "2026-10-12",
+  "usdPerGbp": 1.325,
+  "fxAsOf": "2026-10-13",
   "fxSource": "Yahoo Finance",
   "commodities": {
     "GOLD": {
       "name": "Gold",
-      "price": 4187.2998,
+      "price": 4213.7998,
       "unit": "oz",
-      "asOf": "2026-10-12",
+      "asOf": "2026-10-13",
       "source": "Yahoo Finance"
     },
     "SILVER": {
       "name": "Silver",
-      "price": 60.76,
+      "price": 60.58,
       "unit": "oz",
-      "asOf": "2026-10-12",
+      "asOf": "2026-10-13",
       "source": "Yahoo Finance"
     },
     "BRENT": {
       "name": "Brent Crude",
-      "price": 106.79,
+      "price": 104.72,
       "unit": "bbl",
-      "asOf": "2026-10-12",
+      "asOf": "2026-10-13",
       "source": "Yahoo Finance"
     },
     "NATGAS": {
       "name": "Natural Gas",
-      "price": 3.109,
+      "price": 3.168,
       "unit": "MMBtu",
-      "asOf": "2026-10-12",
+      "asOf": "2026-10-13",
       "source": "Yahoo Finance"
     },
     "COPPER": {
       "name": "Copper",
-      "price": 6.7695,
+      "price": 6.7385,
       "unit": "lb",
-      "asOf": "2026-10-12",
+      "asOf": "2026-10-13",
       "source": "Yahoo Finance"
     }
   }
